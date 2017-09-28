@@ -14,6 +14,7 @@ namespace Parseur_v1
         [STAThread]
         static void Main()
         {
+            Console.Write("Parseur V1");
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
