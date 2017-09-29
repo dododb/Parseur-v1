@@ -68,27 +68,47 @@ namespace Parseur_v1
         {
             if (this.textSelected2 == "")
             {
-                this.reset();
-
-                ColorDialog cd1 = new ColorDialog();
-                if (cd1.ShowDialog() == DialogResult.OK)
+                if (!lock1)
                 {
-                    if(this.elementsToParse1.ContainsKey(cd1.Color))
+                    if (MessageBox.Show("Mise en forme du texte terminé?", "Waring", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                     {
-                        MessageBox.Show("Color already used", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        if (this.button6.Text == "Lock")
+                        {
+                            this.lockRichText(this.richTextBox2);
+                            this.button6.Text = "Modify";
+                        }
+                        else
+                        {
+                            this.unlockRichText(this.richTextBox2);
+                            this.button6.Text = "Lock";
+                        }
                     }
-                    else
+                }
+
+                if (lock1)
+                {
+                    this.reset();
+
+                    ColorDialog cd1 = new ColorDialog();
+                    if (cd1.ShowDialog() == DialogResult.OK)
                     {
-                        this.elementsToParse1.Add(cd1.Color, Tuple.Create(this.lenghtSelected1, this.textSelected1));
+                        if (this.elementsToParse1.ContainsKey(cd1.Color))
+                        {
+                            MessageBox.Show("Color already used", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        else
+                        {
+                            this.elementsToParse1.Add(cd1.Color, Tuple.Create(this.lenghtSelected1, this.textSelected1));
 
-                        richTextBox2.Select(indexSelected1, lenghtSelected1);
-                        richTextBox2.SelectionColor = cd1.Color;
+                            richTextBox2.Select(indexSelected1, lenghtSelected1);
+                            richTextBox2.SelectionColor = cd1.Color;
 
-                        this.textSelected1 = "";
-                        this.indexSelected1 = 0;
-                        this.lenghtSelected1 = 0;
+                            this.textSelected1 = "";
+                            this.indexSelected1 = 0;
+                            this.lenghtSelected1 = 0;
+                        }
+
                     }
-
                 }
             }
             else
@@ -98,9 +118,16 @@ namespace Parseur_v1
                 {
                     if (MessageBox.Show("Mise en forme du texte terminé?", "Waring", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                     {
-                        this.lock2 = true;
-                        this.richTextBox1.ReadOnly = true;
-                        this.richTextBox1.BackColor = Color.Gainsboro;
+                        if (this.button6.Text == "Lock")
+                        {
+                            this.lockRichText(this.richTextBox1);
+                            this.button6.Text = "Modify";
+                        }
+                        else
+                        {
+                            this.unlockRichText(this.richTextBox1);
+                            this.button6.Text = "Lock";
+                        }
                     }
                 }
 
@@ -183,21 +210,47 @@ namespace Parseur_v1
             else
             {
                 this.unlockRichText(this.richTextBox2);
-                this.button6.Text = "Modify";
+                this.button6.Text = "Lock";
             }
         }
 
         private void button7_Click(object sender, EventArgs e)
         {
-            if (this.button6.Text == "Lock")
+            if (this.button7.Text == "Lock")
+            {
+                this.lockRichText(this.richTextBox1);
+                this.button7.Text = "Modify";
+            }
+            else
             {
                 this.unlockRichText(this.richTextBox1);
                 this.button7.Text = "Lock";
             }
-            else
+        }
+
+        //Reset All
+        private void button3_Click(object sender, EventArgs e)
+        {
+
+            this.elementsToParse1.Clear();
+            this.textSelected1 = "";
+            this.indexSelected1 = 0;
+            this.lenghtSelected1 = 0;
+
+            this.elementsToParse2.Clear();
+            this.textSelected2 = "";
+            this.indexSelected2 = 0;
+            this.lenghtSelected2 = 0;
+
+            if (this.button7.Text == "Modify")
+            {
+                this.unlockRichText(this.richTextBox1);
+                this.button7.Text = "Lock";
+            }
+            if (this.button6.Text == "Modify")
             {
                 this.unlockRichText(this.richTextBox2);
-                this.button7.Text = "Lock";
+                this.button6.Text = "Lock";
             }
         }
 
@@ -306,9 +359,6 @@ namespace Parseur_v1
             Console.WriteLine("[" + textSelected2 + "]:[" + indexSelected2 + "]:[" + lenghtSelected2 + "] - [" + elementsToParse2.Count + "]");
             Console.WriteLine("=======================");
         }
-
-
-
     }
 }
 //Modify
