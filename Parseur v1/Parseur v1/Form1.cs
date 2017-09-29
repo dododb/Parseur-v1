@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 namespace Parseur_v1
 {
@@ -16,11 +17,15 @@ namespace Parseur_v1
         string textSelected1 = "";
         int indexSelected1;
         int lenghtSelected1;
+        bool lock1 = false;
 
         Dictionary<Color, Tuple<int, string>> elementsToParse2 = new Dictionary<Color, Tuple<int, string>>();
         string textSelected2 = "";
         int indexSelected2;
         int lenghtSelected2;
+        bool lock2 = false;
+
+        string fileToParse;
 
         public Form1()
         {
@@ -81,33 +86,104 @@ namespace Parseur_v1
             else
             {
 
-                this.reset();
-
-                ColorDialog cd1 = new ColorDialog();
-                if (cd1.ShowDialog() == DialogResult.OK)
+                if (!lock2)
                 {
-                    Tuple < int, string > buffer;
-                    if (this.elementsToParse1.TryGetValue(cd1.Color, out buffer))
+                    if (MessageBox.Show("Mise en forme du texte terminé?", "Waring", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                     {
-                        if (buffer.Item2 == textSelected2)
-                        {
-                            this.elementsToParse2.Add(cd1.Color, Tuple.Create(this.lenghtSelected2, this.textSelected2));
-
-                            richTextBox1.Select(indexSelected2, lenghtSelected2);
-                            richTextBox1.SelectionColor = cd1.Color;
-                        }
+                        this.lock2 = true;
+                        this.richTextBox1.ReadOnly = true;
+                        this.richTextBox1.BackColor = Color.Gainsboro;
                     }
                 }
 
-                this.textSelected2 = "";
-                this.indexSelected2 = 0;
-                this.lenghtSelected2 = 0;
+                if (lock2)
+                {
+                    this.reset();
+
+                    ColorDialog cd1 = new ColorDialog();
+                    if (cd1.ShowDialog() == DialogResult.OK)
+                    {
+                        Tuple<int, string> buffer;
+                        if (this.elementsToParse1.TryGetValue(cd1.Color, out buffer))
+                        {
+                            if (buffer.Item2 == textSelected2)
+                            {
+                                this.elementsToParse2.Add(cd1.Color, Tuple.Create(this.lenghtSelected2, this.textSelected2));
+
+                                richTextBox1.Select(indexSelected2, lenghtSelected2);
+                                richTextBox1.SelectionColor = cd1.Color;
+                            }
+                        }
+                    }
+
+                    this.textSelected2 = "";
+                    this.indexSelected2 = 0;
+                    this.lenghtSelected2 = 0;
+                }
             }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             this.reset();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            Stream myStream = null;
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+
+            openFileDialog1.InitialDirectory = "c:\\";
+            openFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+            openFileDialog1.FilterIndex = 2;
+            openFileDialog1.RestoreDirectory = true;
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    if ((myStream = openFileDialog1.OpenFile()) != null)
+                    {
+                        using (myStream)
+                        {
+                            StreamReader st = new StreamReader(myStream);
+                            String line = st.ReadToEnd();
+                            this.fileToParse = line;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
+                }
+            }
+        }
+        private void button6_Click(object sender, EventArgs e)
+        {
+            if(this.button6.Text == "Lock")
+            {
+                this.lockRichText(this.richTextBox2);
+                this.button6.Text = "Modify";
+            }
+            else
+            {
+                this.unlockRichText(this.richTextBox2);
+                this.button6.Text = "Lock";
+            }
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            if (this.button6.Text == "Lock")
+            {
+                this.lockRichText(this.richTextBox1);
+                this.button6.Text = "Modify";
+            }
+            else
+            {
+                this.unlockRichText(this.richTextBox1);
+                this.button6.Text = "Lock";
+            }
         }
 
         private void attribuerUneColeurToolStripMenuItem_Click(object sender, EventArgs e)
@@ -174,12 +250,50 @@ namespace Parseur_v1
             }
         }
 
+        private void lockRichText(RichTextBox box)
+        {
+            if(box == this.richTextBox1) this.lock2 = true;
+            else this.lock1 = true;
+
+            box.ReadOnly = true;
+            box.BackColor = Color.Gainsboro;
+        }
+
+        private void unlockRichText(RichTextBox box)
+        {
+            if (box == this.richTextBox1)
+            {
+                this.lock2 = false;
+                this.elementsToParse2.Clear();
+                this.textSelected2 = "";
+                this.indexSelected2 = 0;
+                this.lenghtSelected2 = 0;
+            }
+            else
+            {
+                this.lock1 = false;
+                this.elementsToParse1.Clear();
+                this.textSelected1 = "";
+                this.indexSelected1 = 0;
+                this.lenghtSelected1 = 0;
+            }
+
+            box.SelectAll();
+            box.SelectionColor = Color.Black;
+            box.ReadOnly = false;
+            box.BackColor = Color.White;
+        }
+
+
         private void button4_Click(object sender, EventArgs e)
         {
             Console.WriteLine("[" + textSelected1 + "]:[" + indexSelected1 + "]:[" + lenghtSelected1 + "] - [" + elementsToParse1.Count + "]");
             Console.WriteLine("[" + textSelected2 + "]:[" + indexSelected2 + "]:[" + lenghtSelected2 + "] - [" + elementsToParse2.Count + "]");
             Console.WriteLine("=======================");
-
         }
+
+
+
     }
 }
+//Modify
