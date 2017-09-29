@@ -12,13 +12,13 @@ namespace Parseur_v1
 {
     public partial class Form1 : Form
     {
-        Dictionary<string, Tuple<int, Color>> elementsToParse1 = new Dictionary<string, Tuple<int, Color>>();
-        string textSelected1;
+        Dictionary<Color, Tuple<int, string>> elementsToParse1 = new Dictionary<Color, Tuple<int, string>>();
+        string textSelected1 = "";
         int indexSelected1;
         int lenghtSelected1;
 
-        Dictionary<string, Tuple<int, Color>> elementsToParse2 = new Dictionary<string, Tuple<int, Color>>();
-        string textSelected2;
+        Dictionary<Color, Tuple<int, string>> elementsToParse2 = new Dictionary<Color, Tuple<int, string>>();
+        string textSelected2 = "";
         int indexSelected2;
         int lenghtSelected2;
 
@@ -63,14 +63,12 @@ namespace Parseur_v1
         {
             if (this.textSelected2 == "")
             {
-                this.elementsToParse1.Remove(this.textSelected1);
-                richTextBox2.Select(indexSelected1, lenghtSelected1);
-                richTextBox2.SelectionColor = Color.Black;
+                this.reset();
 
                 ColorDialog cd1 = new ColorDialog();
                 if (cd1.ShowDialog() == DialogResult.OK)
                 {
-                    this.elementsToParse1.Add(this.textSelected1, Tuple.Create(this.lenghtSelected1, cd1.Color));
+                    this.elementsToParse1.Add(cd1.Color, Tuple.Create(this.lenghtSelected1, this.textSelected1));
 
                     richTextBox2.Select(indexSelected1, lenghtSelected1);
                     richTextBox2.SelectionColor = cd1.Color;
@@ -82,17 +80,23 @@ namespace Parseur_v1
             }
             else
             {
-                this.elementsToParse2.Remove(this.textSelected2);
-                richTextBox1.Select(indexSelected2, lenghtSelected2);
-                richTextBox1.SelectionColor = Color.Black;
+
+                this.reset();
 
                 ColorDialog cd1 = new ColorDialog();
                 if (cd1.ShowDialog() == DialogResult.OK)
                 {
-                    this.elementsToParse2.Add(this.textSelected2, Tuple.Create(this.lenghtSelected2, cd1.Color));
+                    Tuple < int, string > buffer;
+                    if (this.elementsToParse1.TryGetValue(cd1.Color, out buffer))
+                    {
+                        if (buffer.Item2 == textSelected2)
+                        {
+                            this.elementsToParse2.Add(cd1.Color, Tuple.Create(this.lenghtSelected2, this.textSelected2));
 
-                    richTextBox1.Select(indexSelected2, lenghtSelected2);
-                    richTextBox1.SelectionColor = cd1.Color;
+                            richTextBox1.Select(indexSelected2, lenghtSelected2);
+                            richTextBox1.SelectionColor = cd1.Color;
+                        }
+                    }
                 }
 
                 this.textSelected2 = "";
@@ -103,18 +107,7 @@ namespace Parseur_v1
 
         private void button2_Click(object sender, EventArgs e)
         {
-            if (this.textSelected2 == "")
-            {
-                this.elementsToParse1.Remove(this.textSelected1);
-                richTextBox2.Select(indexSelected1, lenghtSelected1);
-                richTextBox2.SelectionColor = Color.Black;
-            }
-            else
-            {
-                this.elementsToParse2.Remove(this.textSelected2);
-                richTextBox1.Select(indexSelected2, lenghtSelected2);
-                richTextBox1.SelectionColor = Color.Black;
-            }
+            this.reset();
         }
 
         private void attribuerUneColeurToolStripMenuItem_Click(object sender, EventArgs e)
@@ -144,11 +137,48 @@ namespace Parseur_v1
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            Console.WriteLine("[" + this.textBox1.Text + "]");
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
+
+        }
+
+
+
+        private void reset()
+        {
+            if (this.textSelected2 == "")
+            {
+                foreach (KeyValuePair<Color, Tuple<int, string>> element in this.elementsToParse1)
+                {
+                    if (element.Value.Item1 == indexSelected1 && element.Value.Item2 == this.textSelected1)
+                    {
+                        this.elementsToParse1.Remove(element.Key);
+                    }
+                }
+                richTextBox2.Select(indexSelected1, lenghtSelected1);
+                richTextBox2.SelectionColor = Color.Black;
+            }
+            else
+            {
+                foreach (KeyValuePair<Color, Tuple<int, string>> element in this.elementsToParse2)
+                {
+                    if (element.Value.Item1 == indexSelected2 && element.Value.Item2 == this.textSelected2)
+                    {
+                        this.elementsToParse2.Remove(element.Key);
+                    }
+                }
+                richTextBox1.Select(indexSelected2, lenghtSelected2);
+                richTextBox1.SelectionColor = Color.Black;
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine("[" + textSelected1 + "]:[" + indexSelected1 + "]:[" + lenghtSelected1 + "] - [" + elementsToParse1.Count + "]");
+            Console.WriteLine("[" + textSelected2 + "]:[" + indexSelected2 + "]:[" + lenghtSelected2 + "] - [" + elementsToParse2.Count + "]");
+            Console.WriteLine("=======================");
 
         }
     }
