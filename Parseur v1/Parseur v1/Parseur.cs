@@ -57,13 +57,15 @@ namespace Parseur_v1
         public string DoParsing(string stringToParse)
         {
             //get all separator in the string order
-            string[] separators = Regex.Split(this.patternInitial, "<var[0-9]+>");
+            var separators = from separator in Regex.Split(this.patternInitial, "<var[0-9]+>")
+                                  where separator.Length > 0
+                                  select separator;
 
             //recupere tout les mots qui sont des variables
-            List<string> variables = new List<string>();
+            List < string > variables = new List<string>();
             foreach(string separator in separators)
             {
-                var splited = stringToParse.Split(separator.ToArray());
+                var splited = Regex.Split(stringToParse, separator);
 
                 //if the split suceede
                 if (splited.Length > 1)
@@ -87,15 +89,17 @@ namespace Parseur_v1
             int i = 0;
             foreach(string variable in variables)
             {
-                result.Replace("<var" + i + ">", variable);
+                string toReplace = "<var" + i + ">";
+                result = result.Replace(toReplace, variable);
+                i++;
             }
             return result;
         }
 
         public static void Test()
         {
-            Parseur a = new Parseur("<var1>:<var2>", "<var1>\ncoucou\n<var2>");
-            Console.WriteLine(a.DoParsing("papa:maman"));
+            Parseur a = new Parseur(",<var0>:<var1>;;<var2>", "<var1>\n<var0>\n<var2>");
+            Console.WriteLine(a.DoParsing(",papa:maman;;soeur"));
         }
     }
 }
