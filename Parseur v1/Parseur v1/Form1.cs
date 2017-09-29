@@ -290,6 +290,7 @@ namespace Parseur_v1
             Console.WriteLine("[" + textSelected1 + "]:[" + indexSelected1 + "]:[" + lenghtSelected1 + "] - [" + elementsToParse1.Count + "]");
             Console.WriteLine("[" + textSelected2 + "]:[" + indexSelected2 + "]:[" + lenghtSelected2 + "] - [" + elementsToParse2.Count + "]");
             Console.WriteLine("=======================");
+            Parseur.Test();
         }
 
 
