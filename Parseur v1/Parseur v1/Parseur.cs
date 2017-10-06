@@ -62,12 +62,15 @@ namespace Parseur_v1
         {
             string[] patternInit;
             string patternFinal = final;
-
+            
             patternInit = initial.Split(elementsInitial.AsEnumerable().Select(x => x.Value.Item2).ToArray(), StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();//.Where(x => x.Length > 0).ToArray();
             
             //sous la forme <index, length>
             //permet de connaitre le decalage provoqué par le remplacement des mots pas {X} dans patternFinal
             List<Tuple<int, int>> decalage = new List<Tuple<int, int>>();
+
+            //List<KeyValuePair<Color, Tuple<int,string>>> listElementSortByIndex = elementsInitial.ToList();
+            //listElementSortByIndex.Sort((pair1, pair2) => pair2.Value.Item1.CompareTo(pair1.Value.Item1));
 
             int i = 0;
             foreach (var elementInitial in elementsInitial)
@@ -86,7 +89,7 @@ namespace Parseur_v1
                     patternFinal = new string(patternFinal.Take(indexFinal).ToArray()) + "{" + i + "}"
                         + new string(patternFinal.Skip(indexFinal + coloredString.Length).ToArray());
                     decalage.Add(new Tuple<int, int>(elementFinal.Item1, coloredString.Length -(2 + i.ToString().Length)));
-                    i++;
+                    i++;     
                 }
             }
             return new Parseur(patternInit, patternFinal);
@@ -132,8 +135,8 @@ namespace Parseur_v1
         /// </summary>
         public static void Test()
         {
-            int length = 10000;
-            var parseur = TestCreatePasseur(length);
+            int length = 5;
+            var parseur = TestCreatePasseur();
             parseur.TestParseur(length);
             //parseur.TestSave();
         }
@@ -163,15 +166,15 @@ namespace Parseur_v1
             {
                 elementsInitial.Add(Color.FromArgb(col.Item1, col.Item2, col.Item3), new Tuple<int, string>(1 + i * smallInit.Length, "{0}mm"));
                 elementsFinal.Add(Color.FromArgb(col.Item1, col.Item2, col.Item3), new Tuple<int, string>(6 + i * smallFinal.Length, "{0}mm"));
-                col = addForColor(col);
+                col = AddForColor(col);
 
                 elementsInitial.Add(Color.FromArgb(col.Item1, col.Item2, col.Item3), new Tuple<int, string>(8 + i * smallInit.Length, "soeur"));
                 elementsFinal.Add(Color.FromArgb(col.Item1, col.Item2, col.Item3), new Tuple<int, string>(0 + i * smallFinal.Length, "soeur"));
-                col = addForColor(col);
+                col = AddForColor(col);
 
                 elementsInitial.Add(Color.FromArgb(col.Item1, col.Item2, col.Item3), new Tuple<int, string>(15 + i * smallInit.Length, "toto"));
                 elementsFinal.Add(Color.FromArgb(col.Item1, col.Item2, col.Item3), new Tuple<int, string>(12 + i * smallFinal.Length, "toto"));
-                col = addForColor(col);
+                col = AddForColor(col);
             }
             t.Stop();
             Console.WriteLine("creation time : " + t.Elapsed);
@@ -184,7 +187,7 @@ namespace Parseur_v1
             return parseur;
         }
 
-        private static Tuple<int,int,int> addForColor(Tuple<int,int,int> col)
+        private static Tuple<int,int,int> AddForColor(Tuple<int,int,int> col)
         {
             int a = col.Item1;
             int b = col.Item2;
@@ -204,7 +207,7 @@ namespace Parseur_v1
             timerParsing.Start();
             var result = this.DoParsing(string.Join("maman;;soeur//papa,", new string[length]));
             timerParsing.Stop();
-            //Console.WriteLine(result);
+            Console.WriteLine(result);
             Console.WriteLine("timer to parse : " + timerParsing.Elapsed);
         }
 
