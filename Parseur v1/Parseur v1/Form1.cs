@@ -31,40 +31,26 @@ namespace Parseur_v1
         {
             InitializeComponent();
         }
-
+        
         private void Form1_Load(object sender, EventArgs e)
         {
 
         }
 
-        private void toolStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        private void lockPattern1Button_Click(object sender, EventArgs e)
         {
+            if (!this.templateInitial.ReadOnly)  this.lockRichText(this.templateInitial);
+            else this.unLockRichText(this.templateInitial);
 
         }
 
-
-        private void richTextBox2_TextChanged(object sender, EventArgs e)
+        private void lockPattern2Button_Click(object sender, EventArgs e)
         {
-
+            if (!this.templateFinal.ReadOnly)  this.lockRichText(this.templateFinal);
+            else this.unLockRichText(this.templateFinal);
         }
 
-        private void RichTextBox2_SelectionChanged(object sender, EventArgs e)
-        {
-            this.textSelected1 = richTextBox2.SelectedText;
-            this.indexSelected1 = richTextBox2.SelectionStart;
-            this.lenghtSelected1 = richTextBox2.SelectionLength;
-
-            this.richTextBox3.Text = richTextBox2.SelectedText;
-        }
-        private void RichTextBox1_SelectionChanged(object sender, EventArgs e)
-        {
-            this.textSelected2 = richTextBox1.SelectedText;
-            this.indexSelected2 = richTextBox1.SelectionStart;
-            this.lenghtSelected2 = richTextBox1.SelectionLength;
-
-            this.richTextBox3.Text = richTextBox1.SelectedText;
-        }
-        private void button1_Click(object sender, EventArgs e)
+        private void colorButton_Click(object sender, EventArgs e)
         {
             if (this.textSelected2 == "")
             {
@@ -72,16 +58,7 @@ namespace Parseur_v1
                 {
                     if (MessageBox.Show("Mise en forme du texte terminé?", "Waring", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                     {
-                        if (this.button6.Text == "Lock")
-                        {
-                            this.lockRichText(this.richTextBox2);
-                            this.button6.Text = "Modify";
-                        }
-                        else
-                        {
-                            this.unlockRichText(this.richTextBox2);
-                            this.button6.Text = "Lock";
-                        }
+                        if (this.lockPattern1Button.Text == "Lock 1") this.lockRichText(this.templateInitial);
                     }
                 }
 
@@ -98,17 +75,18 @@ namespace Parseur_v1
                         }
                         else
                         {
-                            this.elementsToParse1.Add(cd1.Color, Tuple.Create(this.lenghtSelected1, this.textSelected1));
+                            this.elementsToParse1.Add(cd1.Color, Tuple.Create(this.indexSelected1, this.textSelected1));
 
-                            richTextBox2.Select(indexSelected1, lenghtSelected1);
-                            richTextBox2.SelectionColor = cd1.Color;
+                            templateInitial.Select(indexSelected1, lenghtSelected1);
+                            templateInitial.SelectionColor = cd1.Color;
 
-                            this.textSelected1 = "";
-                            this.indexSelected1 = 0;
-                            this.lenghtSelected1 = 0;
+                            saveColor(cd1.Color);
                         }
-
                     }
+
+                    this.textSelected1 = "";
+                    this.indexSelected1 = 0;
+                    this.lenghtSelected1 = 0;
                 }
             }
             else
@@ -118,16 +96,7 @@ namespace Parseur_v1
                 {
                     if (MessageBox.Show("Mise en forme du texte terminé?", "Waring", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                     {
-                        if (this.button6.Text == "Lock")
-                        {
-                            this.lockRichText(this.richTextBox1);
-                            this.button6.Text = "Modify";
-                        }
-                        else
-                        {
-                            this.unlockRichText(this.richTextBox1);
-                            this.button6.Text = "Lock";
-                        }
+                        if (this.lockPattern2Button.Text == "Lock 2") this.lockRichText(this.templateFinal);
                     }
                 }
 
@@ -149,10 +118,12 @@ namespace Parseur_v1
                             {
                                 if (buffer.Item2 == textSelected2)
                                 {
-                                    this.elementsToParse2.Add(cd1.Color, Tuple.Create(this.lenghtSelected2, this.textSelected2));
+                                    this.elementsToParse2.Add(cd1.Color, Tuple.Create(this.indexSelected2, this.textSelected2));
 
-                                    richTextBox1.Select(indexSelected2, lenghtSelected2);
-                                    richTextBox1.SelectionColor = cd1.Color;
+                                    templateFinal.Select(indexSelected2, lenghtSelected2);
+                                    templateFinal.SelectionColor = cd1.Color;
+
+                                    saveColor(cd1.Color);
                                 }
                             }
                         }
@@ -165,12 +136,17 @@ namespace Parseur_v1
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void resetButton_Click(object sender, EventArgs e)
         {
             this.reset();
         }
 
-        private void button5_Click(object sender, EventArgs e)
+        private void resetAllButton_Click(object sender, EventArgs e)
+        {
+            this.resetAll();
+        }
+
+        private void fileButton_Click(object sender, EventArgs e)
         {
             Stream myStream = null;
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
@@ -189,49 +165,236 @@ namespace Parseur_v1
                         using (myStream)
                         {
                             StreamReader st = new StreamReader(myStream);
-                            String line = st.ReadToEnd();
-                            this.fileToParse = line;
+                            this.fileToParse = st.ReadToEnd();
+                            st.Dispose();
+                            this.filePath.Text = openFileDialog1.SafeFileName;
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
+                    MessageBox.Show("Could not read file from disk. Original error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            myStream.Dispose();
+            openFileDialog1.Dispose();
+        }
+
+        private void saveButton_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void templateInitial_SelectionChanged(object sender, EventArgs e)
+        {
+            this.textSelected1 = templateInitial.SelectedText;
+            this.indexSelected1 = templateInitial.SelectionStart;
+            this.lenghtSelected1 = templateInitial.SelectionLength;
+
+            this.selection.Text = templateInitial.SelectedText;
+        }
+
+        private void templateFinal_SelectionChanged(object sender, EventArgs e)
+        {
+            this.textSelected2 = templateFinal.SelectedText;
+            this.indexSelected2 = templateFinal.SelectionStart;
+            this.lenghtSelected2 = templateFinal.SelectionLength;
+
+            this.selection.Text = templateFinal.SelectedText;
+        }
+
+        private void colorSave1_Click(object sender, EventArgs e)
+        {
+            this.colorSave(this.colorSave1.BackColor);
+        }
+
+        private void colorSave2_Click(object sender, EventArgs e)
+        {
+            this.colorSave(this.colorSave2.BackColor);
+        }
+
+        private void colorSave3_Click(object sender, EventArgs e)
+        {
+            this.colorSave(this.colorSave3.BackColor);
+        }
+
+        private void colorSave4_Click(object sender, EventArgs e)
+        {
+            this.colorSave(this.colorSave4.BackColor);
+        }
+
+        private void colorSave5_Click(object sender, EventArgs e)
+        {
+            this.colorSave(this.colorSave5.BackColor);
+        }
+
+        private void colorSave6_Click(object sender, EventArgs e)
+        {
+            this.colorSave(this.colorSave6.BackColor);
+        }
+
+        private void colorSave7_Click(object sender, EventArgs e)
+        {
+            this.colorSave(this.colorSave7.BackColor);
+        }
+
+        private void colorSave8_Click(object sender, EventArgs e)
+        {
+            this.colorSave(this.colorSave8.BackColor);
+        }
+
+        private void colorSave9_Click(object sender, EventArgs e)
+        {
+            this.colorSave(this.colorSave9.BackColor);
+        }
+
+        private void colorSave10_Click(object sender, EventArgs e)
+        {
+            this.colorSave(this.colorSave10.BackColor);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        private void colorSave(Color save)
+        {
+            if (this.textSelected2 == "")
+            {
+                if (!lock1)
+                {
+                    if (MessageBox.Show("Mise en forme du texte terminé?", "Waring", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
+                    {
+                        if (this.lockPattern1Button.Text == "Lock 1") this.lockRichText(this.templateInitial);
+                    }
+                }
+
+                if (lock1)
+                {
+                    this.reset();
+
+                    if (save != Color.FromArgb(32, 32, 32))
+                    {
+                        if (this.elementsToParse1.ContainsKey(save))
+                        {
+                            MessageBox.Show("Color already used", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        else
+                        {
+                            this.elementsToParse1.Add(save, Tuple.Create(this.indexSelected1, this.textSelected1));
+
+                            templateInitial.Select(indexSelected1, lenghtSelected1);
+                            templateInitial.SelectionColor = save;
+                        }
+                    }
+
+                    this.textSelected1 = "";
+                    this.indexSelected1 = 0;
+                    this.lenghtSelected1 = 0;
+                }
+            }
+            else
+            {
+
+                if (!lock2)
+                {
+                    if (MessageBox.Show("Mise en forme du texte terminé?", "Waring", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
+                    {
+                        if (this.lockPattern2Button.Text == "Lock 2") this.lockRichText(this.templateFinal);
+                    }
+                }
+
+                if (lock2)
+                {
+                    this.reset();
+
+                    if (save != Color.FromArgb(32, 32, 32))
+                    {
+                        if (this.elementsToParse2.ContainsKey(save))
+                        {
+                            MessageBox.Show("Color already used", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        else
+                        {
+                            Tuple<int, string> buffer;
+                            if (this.elementsToParse1.TryGetValue(save, out buffer))
+                            {
+                                if (buffer.Item2 == textSelected2)
+                                {
+                                    this.elementsToParse2.Add(save, Tuple.Create(this.indexSelected2, this.textSelected2));
+
+                                    templateFinal.Select(indexSelected2, lenghtSelected2);
+                                    templateFinal.SelectionColor = save;
+                                }
+                            }
+                        }
+                    }
+
+                    this.textSelected2 = "";
+                    this.indexSelected2 = 0;
+                    this.lenghtSelected2 = 0;
                 }
             }
         }
-        private void button6_Click(object sender, EventArgs e)
+
+
+        private void reset()
         {
-            if(this.button6.Text == "Lock")
+            Color remove =  new Color();
+            if (this.textSelected2 == "")
             {
-                this.lockRichText(this.richTextBox2);
-                this.button6.Text = "Modify";
+                foreach (KeyValuePair<Color, Tuple<int, string>> element in this.elementsToParse1)
+                {
+                    if (element.Value.Item1 == indexSelected1 && element.Value.Item2 == this.textSelected1)
+                    {
+
+                        remove = element.Key;
+                        templateInitial.Select(indexSelected1, lenghtSelected1);
+                        templateInitial.SelectionColor = Color.Black;
+                    }
+                }
+                if(remove != null) this.elementsToParse1.Remove(remove);
             }
             else
             {
-                this.unlockRichText(this.richTextBox2);
-                this.button6.Text = "Lock";
+                foreach (KeyValuePair<Color, Tuple<int, string>> element in this.elementsToParse2)
+                {
+                    if (element.Value.Item1 == indexSelected2 && element.Value.Item2 == this.textSelected2)
+                    {
+                        remove = element.Key;
+                        templateFinal.Select(indexSelected2, lenghtSelected2);
+                        templateFinal.SelectionColor = Color.Black;
+                    }
+                }
+                if (remove != null) this.elementsToParse2.Remove(remove);
             }
         }
 
-        private void button7_Click(object sender, EventArgs e)
+        private void resetAll()
         {
-            if (this.button7.Text == "Lock")
-            {
-                this.lockRichText(this.richTextBox1);
-                this.button7.Text = "Modify";
-            }
-            else
-            {
-                this.unlockRichText(this.richTextBox1);
-                this.button7.Text = "Lock";
-            }
-        }
-
-        //Reset All
-        private void button3_Click(object sender, EventArgs e)
-        {
-
             this.elementsToParse1.Clear();
             this.textSelected1 = "";
             this.indexSelected1 = 0;
@@ -242,123 +405,62 @@ namespace Parseur_v1
             this.indexSelected2 = 0;
             this.lenghtSelected2 = 0;
 
-            if (this.button7.Text == "Modify")
+            if (this.lockPattern1Button.Text == "Modify")
             {
-                this.unlockRichText(this.richTextBox1);
-                this.button7.Text = "Lock";
+                this.unLockRichText(this.templateInitial);
             }
-            if (this.button6.Text == "Modify")
+            if (this.lockPattern2Button.Text == "Modify")
             {
-                this.unlockRichText(this.richTextBox2);
-                this.button6.Text = "Lock";
-            }
-        }
-
-        private void attribuerUneColeurToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void tableLayoutPanel2_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void richTextBox3_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void richTextBox1_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-        }
-
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
-
-
-
-        private void reset()
-        {
-            if (this.textSelected2 == "")
-            {
-                foreach (KeyValuePair<Color, Tuple<int, string>> element in this.elementsToParse1)
-                {
-                    if (element.Value.Item1 == indexSelected1 && element.Value.Item2 == this.textSelected1)
-                    {
-                        this.elementsToParse1.Remove(element.Key);
-                    }
-                }
-                richTextBox2.Select(indexSelected1, lenghtSelected1);
-                richTextBox2.SelectionColor = Color.Black;
-            }
-            else
-            {
-                foreach (KeyValuePair<Color, Tuple<int, string>> element in this.elementsToParse2)
-                {
-                    if (element.Value.Item1 == indexSelected2 && element.Value.Item2 == this.textSelected2)
-                    {
-                        this.elementsToParse2.Remove(element.Key);
-                    }
-                }
-                richTextBox1.Select(indexSelected2, lenghtSelected2);
-                richTextBox1.SelectionColor = Color.Black;
+                this.unLockRichText(this.templateFinal);
             }
         }
 
         private void lockRichText(RichTextBox box)
         {
-            if(box == this.richTextBox1) this.lock2 = true;
-            else this.lock1 = true;
+            if (box == this.templateFinal)
+            {
+                this.lock2 = true;
+                this.lockPattern2Button.Text = "Unlock 2";
+            }
+            else
+            {
+                this.lock1 = true;
+                this.lockPattern1Button.Text = "Unlock 1";
+            }
 
             box.ReadOnly = true;
             box.BackColor = Color.Gainsboro;
         }
 
-        private void unlockRichText(RichTextBox box)
+        private void unLockRichText(RichTextBox box)
         {
-            if (box == this.richTextBox1)
+            if (box == this.templateFinal)
             {
                 this.lock2 = false;
-                this.elementsToParse2.Clear();
-                this.textSelected2 = "";
-                this.indexSelected2 = 0;
-                this.lenghtSelected2 = 0;
+                this.lockPattern2Button.Text = "Lock 2";
             }
             else
             {
                 this.lock1 = false;
-                this.elementsToParse1.Clear();
-                this.textSelected1 = "";
-                this.indexSelected1 = 0;
-                this.lenghtSelected1 = 0;
+                this.lockPattern1Button.Text = "Lock 1";
             }
 
-            box.SelectAll();
-            box.SelectionColor = Color.Black;
             box.ReadOnly = false;
             box.BackColor = Color.White;
         }
 
-
-        private void button4_Click(object sender, EventArgs e)
+        void saveColor(Color save)
         {
-            Console.WriteLine("[" + textSelected1 + "]:[" + indexSelected1 + "]:[" + lenghtSelected1 + "] - [" + elementsToParse1.Count + "]");
-            Console.WriteLine("[" + textSelected2 + "]:[" + indexSelected2 + "]:[" + lenghtSelected2 + "] - [" + elementsToParse2.Count + "]");
-            Console.WriteLine("=======================");
+            if (this.colorSave1.BackColor == Color.FromArgb(32, 32, 32) || this.colorSave1.BackColor == save) this.colorSave1.BackColor = save;
+            else if (this.colorSave2.BackColor == Color.FromArgb(32, 32, 32) || this.colorSave2.BackColor == save) this.colorSave2.BackColor = save;
+            else if (this.colorSave3.BackColor == Color.FromArgb(32, 32, 32) || this.colorSave3.BackColor == save) this.colorSave3.BackColor = save;
+            else if (this.colorSave4.BackColor == Color.FromArgb(32, 32, 32) || this.colorSave4.BackColor == save) this.colorSave4.BackColor = save;
+            else if (this.colorSave5.BackColor == Color.FromArgb(32, 32, 32) || this.colorSave5.BackColor == save) this.colorSave5.BackColor = save;
+            else if (this.colorSave6.BackColor == Color.FromArgb(32, 32, 32) || this.colorSave6.BackColor == save) this.colorSave6.BackColor = save;
+            else if (this.colorSave7.BackColor == Color.FromArgb(32, 32, 32) || this.colorSave7.BackColor == save) this.colorSave7.BackColor = save;
+            else if (this.colorSave8.BackColor == Color.FromArgb(32, 32, 32) || this.colorSave8.BackColor == save) this.colorSave8.BackColor = save;
+            else if (this.colorSave9.BackColor == Color.FromArgb(32, 32, 32) || this.colorSave9.BackColor == save) this.colorSave9.BackColor = save;
+            else if (this.colorSave10.BackColor == Color.FromArgb(32, 32, 32) || this.colorSave10.BackColor == save) this.colorSave10.BackColor = save;
         }
     }
 }
-//Modify
